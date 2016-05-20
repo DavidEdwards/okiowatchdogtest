@@ -1,0 +1,81 @@
+diff --git a/without-assumenosideeffects-asynctimeout.txt b/with-assumenosideeffects-asynctimeout.txt
+index 7c8b24b..eb3de72 100644
+--- a/without-assumenosideeffects-asynctimeout.txt
++++ b/with-assumenosideeffects-asynctimeout.txt
+@@ -177,32 +177,25 @@ public class AsyncTimeout extends Timeout
+   {
+     Object localObject1 = null;
+     monitorenter;
+-    while (true)
++    try
+     {
+-      AsyncTimeout localAsyncTimeout;
+-      try
++      AsyncTimeout localAsyncTimeout = head.next;
++      if (localAsyncTimeout == null);
++      while (true)
+       {
+-        localAsyncTimeout = head.next;
+-        if (localAsyncTimeout != null)
+-          continue;
+-        AsyncTimeout.class.wait();
+         return localObject1;
+-        long l1 = localAsyncTimeout.remainingNanos(System.nanoTime());
+-        if (l1 > 0L)
+-        {
+-          long l2 = l1 / 1000000L;
+-          AsyncTimeout.class.wait(l2, (int)(l1 - 1000000L * l2));
++        if (localAsyncTimeout.remainingNanos(System.nanoTime()) > 0L)
+           continue;
+-        }
++        head.next = localAsyncTimeout.next;
++        localAsyncTimeout.next = null;
++        localObject1 = localAsyncTimeout;
+       }
+-      finally
+-      {
+-        monitorexit;
+-      }
+-      head.next = localAsyncTimeout.next;
+-      localAsyncTimeout.next = null;
+-      localObject1 = localAsyncTimeout;
+     }
++    finally
++    {
++      monitorexit;
++    }
++    throw localObject2;
+   }
+ 
+   /** @deprecated */
+@@ -254,14 +247,13 @@ public class AsyncTimeout extends Timeout
+           continue;
+         paramAsyncTimeout.timeoutAt = (l1 + Math.min(paramLong, paramAsyncTimeout.deadlineNanoTime() - l1));
+         long l2 = paramAsyncTimeout.remainingNanos(l1);
+-        localAsyncTimeout = head;
+-        if ((localAsyncTimeout.next != null) && (l2 >= localAsyncTimeout.next.remainingNanos(l1)))
+-          break label183;
+-        paramAsyncTimeout.next = localAsyncTimeout.next;
+-        localAsyncTimeout.next = paramAsyncTimeout;
+-        if (localAsyncTimeout != head)
+-          continue;
+-        AsyncTimeout.class.notify();
++        localAsyncTimeout1 = head;
++        if ((localAsyncTimeout1.next != null) && (l2 >= localAsyncTimeout1.next.remainingNanos(l1)))
++          break label182;
++        paramAsyncTimeout.next = localAsyncTimeout1.next;
++        localAsyncTimeout1.next = paramAsyncTimeout;
++        AsyncTimeout localAsyncTimeout2 = head;
++        if (localAsyncTimeout1 == localAsyncTimeout2);
+         return;
+         if (paramLong != 0L)
+         {
+@@ -280,7 +272,7 @@ public class AsyncTimeout extends Timeout
+         continue;
+       }
+       throw new AssertionError();
+-      label183: AsyncTimeout localAsyncTimeout = localAsyncTimeout.next;
++      label182: AsyncTimeout localAsyncTimeout1 = localAsyncTimeout1.next;
+     }
+   }
+ 
